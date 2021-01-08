@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-require("dotenv").config({ path: "./config/config.env" });
 
 /**
  * Module dependencies.
@@ -28,11 +27,19 @@ const server = http.createServer(app);
 
 server.listen(port, () => {
   console.log(
-    `Listening in ${process.env.NODE_ENV} and running on port: ${port}`
+    `Listening in ${process.env.NODE_ENV} and running on port: ${port}`.yellow
+      .bold
   );
 });
 server.on("error", onError);
 server.on("listening", onListening);
+
+// unhabdled Promise Rejection
+process.on("unhandledRejection", (err, promise) => {
+  console.log(`Error: ${err.message}`.red);
+  // close server and exit process
+  server.close(() => process.exit(1));
+});
 
 /**
  * Normalize a port into a number, string, or false.
