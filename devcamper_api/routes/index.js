@@ -1,6 +1,6 @@
-const express = require('express');
-const router = express.Router();
+const router = require("express").Router();
 
-/* GET home page. */
+// route api
+router.use("/api/v1.0.0", require("./api"));
 
 module.exports = router;
