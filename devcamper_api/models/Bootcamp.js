@@ -1,4 +1,8 @@
 const { model, Schema } = require("mongoose");
+const slugify = require("slugify");
+
+// import geocoder from utils
+const geocoder = require("../utils/geocoder");
 
 const BootcampSchema = new Schema({
   name: {
@@ -34,15 +38,13 @@ const BootcampSchema = new Schema({
     required: [true, "Please add an address"],
   },
   location: {
-    // Geojson Point
+    // GeoJSON Point
     type: {
-      type: String, // Don't do `{ location: { type: String } }`
-      enum: ["Point"], // 'location.type' must be 'Point'
-      required: false,
+      type: String,
+      enum: ["Point"],
     },
     coordinates: {
       type: [Number],
-      required: false,
       index: "2dsphere",
     },
     formattedAddress: String,
@@ -95,6 +97,31 @@ const BootcampSchema = new Schema({
     type: Date,
     default: Date.now,
   },
+});
+
+// create bootcamp slug from the name
+BootcampSchema.pre("save", function (next) {
+  this.slug = slugify(this.name, { lower: true });
+  next();
+});
+
+// Geocode & create location field
+BootcampSchema.pre("save", async function (next) {
+  const loc = await geocoder.geocode(this.address);
+  this.location = {
+    type: "Point",
+    coordinates: [loc[0].longitude, loc[0].latitude],
+    formattedAddress: loc[0].formattedAddress,
+    street: loc[0].streetName,
+    city: loc[0].city,
+    state: loc[0].stateCode,
+    zipcode: loc[0].zipcode,
+    country: loc[0].countryCode,
+  };
+
+  // Do not save address in DB
+  this.address = undefined;
+  next();
 });
 
 model("Bootcamp", BootcampSchema);

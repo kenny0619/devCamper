@@ -21,8 +21,12 @@ app.use(express.static(path.join(__dirname, "public")));
 
 // Require models
 require("./models/Bootcamp");
+require("./models/Course");
 
 // Route files
 app.use(require("./routes"));
+
+// mount middleware functions
+app.use(require("./middleware/error"));
 
 module.exports = app;
