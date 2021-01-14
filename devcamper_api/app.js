@@ -3,6 +3,7 @@ const path = require("path");
 const cookieParser = require("cookie-parser");
 const logger = require("morgan");
 const colors = require("colors");
+const fileupload = require("express-fileupload");
 
 const connectDB = require("./config/db");
 
@@ -28,5 +29,8 @@ app.use(require("./routes"));
 
 // mount middleware functions
 app.use(require("./middleware/error"));
+
+//use file upload middleware
+app.use(fileupload);
 
 module.exports = app;

@@ -12,8 +12,8 @@ const Bootcamp = model("Bootcamp");
 
 // import geocoder from utils
 const geocoder = require("../utils/geocoder");
-const { json } = require("express");
-const { param } = require("../routes");
+// const { json } = require("express");
+// const { param } = require("../routes");
 
 // @desc Get All Bootcamps
 // @routes GET /api/v1.0.0/bootcamps
@@ -40,7 +40,7 @@ exports.getBootcamps = asyncHandler(async (req, res, next) => {
   );
 
   // finding resource
-  query = Bootcamp.find(JSON.parse(queryStr));
+  query = Bootcamp.find(JSON.parse(queryStr)).populate("courses");
 
   // Select fields
   if (req.query.select) {
@@ -149,7 +149,7 @@ exports.updateBootcamp = asyncHandler(async (req, res, next) => {
 // @routes DELETE /api/v1.0.0/bootcamps/:id
 // @access PRIVATE
 exports.deleteBootcamp = asyncHandler(async (req, res, next) => {
-  const bootcamp = await Bootcamp.findByIdAndDelete(req.params.id);
+  const bootcamp = await Bootcamp.findById(req.params.id);
 
   if (!bootcamp) {
     return next(
@@ -159,6 +159,9 @@ exports.deleteBootcamp = asyncHandler(async (req, res, next) => {
       )
     );
   }
+
+  bootcamp.remove();
+
   res.status(200).json({ success: true, data: {} });
 });
 
@@ -187,4 +190,25 @@ exports.getBootcampsInRadius = asyncHandler(async (req, res, next) => {
     count: bootcamps.length,
     data: bootcamps,
   });
+});
+
+/**
+ * @description Upload photo for bootcamp
+ * @route PUT /api/v1.0.0/bootcamps/:id/photo
+ * @access Private
+ */
+exports.bootcampPhotoUpload = asyncHandler(async (req, res, next) => {
+  const bootcamp = await Bootcamp.findById(req.params.id);
+
+  if (!bootcamp) {
+    return next(
+      new ErrorResponse(`Bootcamp not found with id of ${req.params.id}`, 404)
+    );
+  }
+
+  if (!req.files) {
+    return next(new ErrorResponse(`Please upload a file`, 404));
+  }
+
+  console.log(req.files);
 });
